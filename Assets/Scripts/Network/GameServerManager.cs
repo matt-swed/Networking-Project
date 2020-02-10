@@ -70,6 +70,9 @@ public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerMana
 
         //Send all objects to spawn
         SendAllObjectsToSpawnTo(e.Client);
+//////////////////////////////////prototyping///////////////////////////////////////////////////
+        e.Client.MessageReceived += MovementMessageReceived;
+////////////////////////////////////////////////////////////////////////////////////////////////
     }
 
     /// <summary>
@@ -127,10 +130,20 @@ public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerMana
     /// <param name="pClient"></param>
     public void SendAllObjectsToSpawnTo(IClient pClient)
     {
-        Debug.Log(networkObjects.Count + "yeets mcgeets");
         foreach (NetworkObject networkObject in networkObjects)
             SendObjectToSpawnTo(networkObject, pClient);
     }
-
+//////////////////////////////////prototyping//////////////////////////////////////////////////////////////
+    void MovementMessageReceived(object sender, MessageReceivedEventArgs e)
+    {
+        using (Message message = e.GetMessage() as Message)
+        {
+            if (message.Tag == NetworkTags.InGame.PLAYER_SYNC_POS)
+            {
+                Debug.Log("Hello there");
+            }
+        }
+    }
+////////////////////////////////////////////////////////////////////////////////////////////////
     #endregion
 }

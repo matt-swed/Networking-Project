@@ -38,7 +38,6 @@ public class ClientManager : MonoBehaviourSingletonPersistent<ClientManager>
         /// Suscribe to events
         
         clientReference.MessageReceived += NeoSpawnGameObjects;
-        Debug.Log("this should only run once");
         //////////////////
         /// Connect to the server manually
         clientReference.ConnectInBackground(
@@ -64,7 +63,6 @@ public class ClientManager : MonoBehaviourSingletonPersistent<ClientManager>
 
             //Spawn the game object
             string resourcePath = NetworkObjectDictionnary.GetResourcePathFor(spawnMessage.resourceID);
-            Debug.Log(resourcePath);
             GameObject go = Resources.Load(resourcePath) as GameObject;
             go.GetComponent<NetworkObject>().id = spawnMessage.networkID;
             Instantiate(go, new Vector3(spawnMessage.x, spawnMessage.y, 0), Quaternion.identity);
