@@ -25,6 +25,8 @@ public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerMana
     /// </summary>
     public List<NetworkObject> networkObjects;
 
+    public List<IClient> clients;
+
     /// <summary>
     /// Last tick received from the server
     /// </summary>
@@ -67,11 +69,13 @@ public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerMana
     private void ClientConnected(object sender, ClientConnectedEventArgs e)
     {
         clientsId.Add(e.Client.ID);
+        clients.Add(e.Client);
 
         //Send all objects to spawn
         SendAllObjectsToSpawnTo(e.Client);
 //////////////////////////////////prototyping///////////////////////////////////////////////////
         e.Client.MessageReceived += MovementMessageReceived;
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
     }
 
@@ -133,6 +137,13 @@ public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerMana
         foreach (NetworkObject networkObject in networkObjects)
             SendObjectToSpawnTo(networkObject, pClient);
     }
+
+    public void SendObjectToAllClients(NetworkObject pNetworkObject)
+    {
+        foreach (IClient client in clients)
+            SendObjectToSpawnTo(pNetworkObject, client);
+    }
+
 //////////////////////////////////prototyping//////////////////////////////////////////////////////////////
     void MovementMessageReceived(object sender, MessageReceivedEventArgs e)
     {
