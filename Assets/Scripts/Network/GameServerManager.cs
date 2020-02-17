@@ -7,6 +7,7 @@ using DarkRift.Server;
 using UnityEngine.SceneManagement;
 using System;
 using Utilities;
+using System.Linq;
 
 public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerManager>
 {
@@ -27,6 +28,9 @@ public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerMana
 
     public List<IClient> clients;
 
+    public NetworkObject playerSelf;
+    public NetworkObject playerOther;
+
     /// <summary>
     /// Last tick received from the server
     /// </summary>
@@ -36,6 +40,7 @@ public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerMana
     void Start()
     {
         clientsId = new List<int>();
+        clients = new List<IClient>();
 
         serverReference = GetComponent<XmlUnityServer>();
 
@@ -71,9 +76,13 @@ public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerMana
         clientsId.Add(e.Client.ID);
         clients.Add(e.Client);
 
+        Debug.Log(e.Client.ID);
+
         //Send all objects to spawn
-        SendAllObjectsToSpawnTo(e.Client);
-//////////////////////////////////prototyping///////////////////////////////////////////////////
+        //////////////////////////////////prototyping///////////////////////////////////////////////////
+        SendObjectToSpawnTo(networkObjects[e.Client.ID], e.Client);
+        SendObjectToOtherClients(networkObjects[e.Client.ID], e.Client);
+
         e.Client.MessageReceived += MovementMessageReceived;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -86,7 +95,7 @@ public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerMana
     /// <param name="e"></param>
     private void ClientDisconnected(object sender, ClientDisconnectedEventArgs e)
     {
-        throw new NotImplementedException();
+        clientsId.Remove(e.Client.ID);
     }
     #endregion
 
@@ -138,9 +147,9 @@ public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerMana
             SendObjectToSpawnTo(networkObject, pClient);
     }
 
-    public void SendObjectToAllClients(NetworkObject pNetworkObject)
+    public void SendObjectToOtherClients(NetworkObject pNetworkObject, IClient thisClient)
     {
-        foreach (IClient client in clients)
+        foreach (IClient client in clients.Where(x => x != thisClient))
             SendObjectToSpawnTo(pNetworkObject, client);
     }
 

@@ -33,7 +33,9 @@ public class NetworkObject : MonoBehaviour
             // Get the instance id of the gameobject on the server scene
             id = GetInstanceID();
             //Register with the server
+            Debug.Log("Hello");
             GameServerManager.instance.RegisterNetworkObject(this);
+            Debug.Log("There");
             //Test for resource ID
             if (resourceId == 0)
                 throw new System.Exception(string.Format("There is no resource id for {0} gameobject", name));

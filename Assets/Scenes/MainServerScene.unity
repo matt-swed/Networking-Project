@@ -182,4 +182,8 @@ MonoBehaviour:
   clientsId: 
   serverReference: {fileID: 0}
   networkObjects: []
+  playerSelf: {fileID: 7832809860618755227, guid: 69040274ecc0a494dbc317ba436d0b95,
+    type: 3}
+  playerOther: {fileID: 7123936500335744719, guid: 4959caf92cd118a46a7f6de84bbfe49a,
+    type: 3}
   currentTick: -1

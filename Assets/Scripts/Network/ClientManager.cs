@@ -14,6 +14,7 @@ public class ClientManager : MonoBehaviourSingletonPersistent<ClientManager>
     /// Reference to the DarkRift2 client
     /// </summary>
     public UnityClient clientReference;
+    public GameObject player;
 
     #endregion
 
@@ -36,7 +37,7 @@ public class ClientManager : MonoBehaviourSingletonPersistent<ClientManager>
 
         //////////////////
         /// Suscribe to events
-        
+
         clientReference.MessageReceived += NeoSpawnGameObjects;
         //////////////////
         /// Connect to the server manually
@@ -65,7 +66,9 @@ public class ClientManager : MonoBehaviourSingletonPersistent<ClientManager>
             string resourcePath = NetworkObjectDictionnary.GetResourcePathFor(spawnMessage.resourceID);
             GameObject go = Resources.Load(resourcePath) as GameObject;
             go.GetComponent<NetworkObject>().id = spawnMessage.networkID;
+            Debug.Log(go.GetComponent<NetworkObject>().id);
             Instantiate(go, new Vector3(spawnMessage.x, spawnMessage.y, 0), Quaternion.identity);
+
         }
     }
     #endregion

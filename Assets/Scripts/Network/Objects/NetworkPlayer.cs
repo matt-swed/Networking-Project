@@ -16,8 +16,11 @@ public class NetworkPlayer : NetworkObject
 
     void Awake()
     {
-        lastPosition = transform.position;
-        Client = GameObject.Find("ClientManager").GetComponent<UnityClient>();
+        if (!Equals(ClientManager.instance, null))
+        {
+            lastPosition = transform.position;
+            Client = GameObject.Find("ClientManager").GetComponent<UnityClient>();
+        }
     }
 
     void Update()
