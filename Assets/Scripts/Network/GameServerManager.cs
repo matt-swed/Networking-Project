@@ -42,8 +42,8 @@ public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerMana
         clientsId = new List<int>();
         clients = new List<IClient>();
 
-        playerSelf.id = 1;                  //id used to let the client know it was sent from the server
-        playerOther.id = 2;                 //id used to let the client know it was sent from the server
+        playerSelf.id = 1;                  //id used to uniquely identify the controllable player from the other controllable players
+        playerOther.id = 1;                 //id used to match the representation of the player with its corresponding controllable player on that player's client
 
         serverReference = GetComponent<XmlUnityServer>();
 
@@ -83,16 +83,17 @@ public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerMana
 
         //Send all objects to spawn
         //////////////////////////////////prototyping///////////////////////////////////////////////////
-        SendObjectToSpawnTo(playerSelf, e.Client);                       //send a controllable player to the client
+        SendObjectToSpawnTo(playerSelf, e.Client);                      //send a controllable player to the client
+        playerSelf.id++;                                                //
 
-        foreach (IClient client in clients.Where(x => x != e.Client))   //send a representation of a controllable player to the client for each other client
-            SendObjectToSpawnTo(playerOther, e.Client);
-
-        SendObjectToOtherClients(playerOther, e.Client);                //send a representation of the controllable player of this client to each other client
-
+        SendRepresentationsToClient(playerOther, e.Client);      //send a representation of a controllable player to the client for each other client
+        
+        SendObjectToOtherClients(playerOther, e.Client);            //send a representation of the controllable player of this client to each other client
+        playerOther.id++;
+        
         e.Client.MessageReceived += MovementMessageReceived;
 
-////////////////////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////////////////////
     }
 
     /// <summary>
@@ -145,6 +146,40 @@ public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerMana
     }
 
     /// <summary>
+    /// sends a message to the client
+    /// </summary>
+    /// <param name="pNetworkObject"></param>
+    /// <param name="thisClient"></param>
+    public void SendRepresentationsToClient(NetworkObject pNetworkObject, IClient thisClient)
+    {
+        int i = 1;
+
+        foreach (IClient client in clients.Where(x => x != thisClient))
+        {
+            //Spawn data to send
+            SpawnMessageModel spawnMessageData = new SpawnMessageModel
+            {
+                networkID = i,
+                resourceID = pNetworkObject.resourceId,
+                x = pNetworkObject.gameObject.transform.position.x,
+                y = pNetworkObject.gameObject.transform.position.y
+            };
+
+            //create the message 
+            using (Message m = Message.Create(
+                NetworkTags.InGame.SPAWN_OBJECT,                //Tag
+                spawnMessageData)                               //Data
+            )
+            {
+                //Send the message in TCP mode (Reliable)
+                thisClient.SendMessage(m, SendMode.Reliable);
+
+            i++;
+            }
+        }
+    }
+
+    /// <summary>
     /// Send a message with all objects to spawn
     /// </summary>
     /// <param name="pClient"></param>
@@ -153,6 +188,7 @@ public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerMana
         foreach (NetworkObject networkObject in networkObjects)
             SendObjectToSpawnTo(networkObject, pClient);
     }
+
 
     /// <summary>
     /// send a message to spawn an object to every other client
