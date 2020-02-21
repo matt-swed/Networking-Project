@@ -26,6 +26,7 @@ public class NetworkObject : MonoBehaviour
         //If we are not on the server and id is not set, destroy the gameobject
         if (Equals(GameServerManager.instance, null) && id == 0)
         {
+            Debug.Log("Something got destroyed");
             Destroy(gameObject);
         }
         else if (!Equals(GameServerManager.instance, null))
@@ -33,9 +34,7 @@ public class NetworkObject : MonoBehaviour
             // Get the instance id of the gameobject on the server scene
             id = GetInstanceID();
             //Register with the server
-            Debug.Log("Hello");
             GameServerManager.instance.RegisterNetworkObject(this);
-            Debug.Log("There");
             //Test for resource ID
             if (resourceId == 0)
                 throw new System.Exception(string.Format("There is no resource id for {0} gameobject", name));

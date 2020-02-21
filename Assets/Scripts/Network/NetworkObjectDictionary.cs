@@ -9,7 +9,7 @@ public static class NetworkObjectDictionnary
     /// </summary>
     private static readonly Dictionary<int, string> dictionary = new Dictionary<int, string>
     {
-        {1, "BouncyBall" },
+        {1, "Representation" },
         {2, "Player" }
     };
 

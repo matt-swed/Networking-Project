@@ -14,8 +14,10 @@ public class NetworkPlayer : NetworkObject
 
     Vector3 lastPosition;
 
-    void Awake()
+    public override void Start()
     {
+        base.Start();
+
         if (!Equals(ClientManager.instance, null))
         {
             lastPosition = transform.position;
