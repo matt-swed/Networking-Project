@@ -57,15 +57,14 @@ public class NetworkRepresentation : NetworkObject
 
     private void FixedUpdate()
     {
-        //If we are on server side
-        if (!Equals(GameServerManager.instance, null))
+        ////If we are on server side
+        //if (!Equals(GameServerManager.instance, null))
+        //{
+        //    if (GameServerManager.instance.currentTick % 10 == 0)
+        //        SendBallPositionToClients();
+        //}
+        if (!Equals(ClientManager.instance, null) && clientTick != -1)
         {
-            if (GameServerManager.instance.currentTick % 10 == 0)
-                SendBallPositionToClients();
-        }
-        else if (!Equals(ClientManager.instance, null) && clientTick != -1)
-        {
-            clientTick++;
             reconciliationInfoList.Add(new BouncyBallSyncMessageModel
             {
                 position = transform.position,
@@ -77,47 +76,49 @@ public class NetworkRepresentation : NetworkObject
         }
     }
 
-    /// <summary>
-    /// Send ball server position to all clients
-    /// </summary>
-    private void SendBallPositionToClients()
-    {
-        //Create the message
-        BouncyBallSyncMessageModel bouncyBallPositionMessageData = new BouncyBallSyncMessageModel
-        {
-            networkID = base.id,
-            serverTick = GameServerManager.instance.currentTick,
-            position = rigidbodyReference.transform.position,
-            velocity = rigidbodyReference.velocity
-        };
+    ///// <summary>
+    ///// Send ball server position to all clients
+    ///// </summary>
+    //private void SendBallPositionToClients()
+    //{
+    //    //Create the message
+    //    BouncyBallSyncMessageModel bouncyBallPositionMessageData = new BouncyBallSyncMessageModel
+    //    {
+    //        networkID = base.id,
+    //        serverTick = GameServerManager.instance.currentTick,
+    //        position = rigidbodyReference.transform.position,
+    //        velocity = rigidbodyReference.velocity
+    //    };
 
-        //create the message 
-        using (Message m = Message.Create(
-            NetworkTags.InGame.BOUNCY_BALL_SYNC_POS,        //Tag
-            bouncyBallPositionMessageData)                  //Data
-        )
-        {
-            foreach (IClient client in GameServerManager.instance.serverReference.Server.ClientManager.GetAllClients())
-            {
-                client.SendMessage(m, SendMode.Reliable);
-            }
-        }
-    }
+    //    //create the message 
+    //    using (Message m = Message.Create(
+    //        NetworkTags.InGame.REP_SYNC_POS,        //Tag
+    //        bouncyBallPositionMessageData)                  //Data
+    //    )
+    //    {
+    //        foreach (IClient client in GameServerManager.instance.serverReference.Server.ClientManager.GetAllClients())
+    //        {
+    //            client.SendMessage(m, SendMode.Reliable);
+    //        }
+    //    }
+    //}
 
     /// <summary>
-    /// update from the server state
+    /// This function receives messages meant to move the representations with their controllable player counterparts. 
+    /// The function distinguishes between messages for different represenations using the networkID
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
     private void UpdateFromServerState(object sender, DarkRift.Client.MessageReceivedEventArgs e)
     {
-        if (e.Tag == NetworkTags.InGame.BOUNCY_BALL_SYNC_POS)
+        //if we can a message with the tag for moving the representation
+        if (e.Tag == NetworkTags.InGame.REP_SYNC_POS)
         {
             //Get message data
             BouncyBallSyncMessageModel syncMessage = e.GetMessage().Deserialize<BouncyBallSyncMessageModel>();
 
             //If this is the first time we receive the message
-            if (Object.Equals(null, lastReceivedMessage))
+            if (Object.Equals(null, lastReceivedMessage) && id == syncMessage.networkID)
             {
                 //Update data
                 rigidbodyReference.velocity = syncMessage.velocity;

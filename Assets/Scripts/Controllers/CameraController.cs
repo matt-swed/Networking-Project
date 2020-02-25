@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
+//Not Important. Honestly, I should probably just delete this script
+
 public class CameraController : MonoBehaviour
 {
     private Transform playerTransform;

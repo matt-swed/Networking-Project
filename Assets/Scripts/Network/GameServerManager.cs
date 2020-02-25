@@ -79,8 +79,6 @@ public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerMana
         clientsId.Add(e.Client.ID);
         clients.Add(e.Client);
 
-        Debug.Log(e.Client.ID);
-
         //Send all objects to spawn
         //////////////////////////////////prototyping///////////////////////////////////////////////////
         SendObjectToSpawnTo(playerSelf, e.Client);                      //send a controllable player to the client
@@ -202,13 +200,41 @@ public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerMana
     }
 
 //////////////////////////////////prototyping//////////////////////////////////////////////////////////////
+/// <summary>
+/// This function recieves a movement message from a client and sends it to the rest of the clients.
+/// </summary>
+/// <param name="sender"></param>
+/// <param name="e"></param>
     void MovementMessageReceived(object sender, MessageReceivedEventArgs e)
     {
         using (Message message = e.GetMessage() as Message)
         {
-            if (message.Tag == NetworkTags.InGame.PLAYER_SYNC_POS)
+            if (message.Tag == NetworkTags.InGame.REP_SYNC_POS)
             {
-                Debug.Log("Hello there");
+                //Get message data
+                BouncyBallSyncMessageModel syncMessage = e.GetMessage().Deserialize<BouncyBallSyncMessageModel>();
+
+                //for every client other than the one that sent the message
+                foreach (IClient client in clients.Where(x => x != e.Client))
+                {
+                    BouncyBallSyncMessageModel movementMessageData = new BouncyBallSyncMessageModel
+                    {
+                        networkID = syncMessage.networkID,
+                        serverTick = syncMessage.serverTick,
+                        position = syncMessage.position,
+                        velocity = syncMessage.velocity
+                    };
+
+                    //create the message 
+                    using (Message m = Message.Create(
+                        NetworkTags.InGame.REP_SYNC_POS,                //Tag
+                        movementMessageData)                               //Data
+                    )
+                    {
+                        //Send the message in TCP mode (Reliable)
+                        client.SendMessage(m, SendMode.Reliable);
+                    }
+                }
             }
         }
     }

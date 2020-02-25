@@ -15,7 +15,7 @@ public static class NetworkTags
         // Bouncy ball
         public const ushort BOUNCY_BALL_SYNC_POS = 2001;
 
-        public const ushort PLAYER_SYNC_POS = 3001;
+        public const ushort REP_SYNC_POS = 3001;
     }
 }
 

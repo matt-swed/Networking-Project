@@ -1,6 +1,16 @@
 ﻿using DarkRift;
 using DarkRift.Client.Unity;
+using DarkRift.Server;
+using DarkRift.Server.Unity;
 using UnityEngine;
+
+
+
+
+//Notes: Need to Rewrite the message writer to fit the BouncyBallSyncMessageModel. Also, I need to rename the BouncyBallSyncMessageModel
+
+
+
 
 public class NetworkPlayer : NetworkObject
 {
@@ -14,9 +24,15 @@ public class NetworkPlayer : NetworkObject
 
     Vector3 lastPosition;
 
+    public int clientTick = -1;
+
+    public Rigidbody rigidbodyReference;
+
     public override void Start()
     {
         base.Start();
+
+        rigidbodyReference = GetComponent<Rigidbody>();
 
         if (!Equals(ClientManager.instance, null))
         {
@@ -25,24 +41,48 @@ public class NetworkPlayer : NetworkObject
         }
     }
 
-    void Update()
+    private void FixedUpdate()
     {
         if (!Equals(ClientManager.instance, null))
         {
+            clientTick++;
+
             if (Vector3.Distance(lastPosition, transform.position) > moveDistance)
             {
-                using (DarkRiftWriter writer = DarkRiftWriter.Create())
-                {
-                    writer.Write(transform.position.x);
-                    writer.Write(transform.position.y);
-
-                    using (Message message = Message.Create(NetworkTags.InGame.PLAYER_SYNC_POS, writer))
-                        Client.SendMessage(message, SendMode.Unreliable);
-                }
+                SendBallPositionToClients();
+                Debug.Log("Message sent from " + id);
 
                 lastPosition = transform.position;
             }
         }
     }
+    private void SendBallPositionToClients()
+    {
+        //Create the message
+        BouncyBallSyncMessageModel bouncyBallPositionMessageData = new BouncyBallSyncMessageModel
+        {
+            networkID = base.id,
+            serverTick = clientTick,
+            position = rigidbodyReference.transform.position,
+            velocity = rigidbodyReference.velocity
+        };
 
+        //create the message 
+        using (Message m = Message.Create(
+            NetworkTags.InGame.REP_SYNC_POS,        //Tag
+            bouncyBallPositionMessageData)                  //Data
+        )
+        {
+            foreach (IClient client in GameServerManager.instance.serverReference.Server.ClientManager.GetAllClients())
+            {
+                client.SendMessage(m, SendMode.Reliable);
+            }
+        }
+    }
+
+    public void ClientConnected()
+    {
+
+    }
 }
+
