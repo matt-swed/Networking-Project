@@ -76,7 +76,6 @@ public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerMana
     /// <param name="e"></param>
     private void ClientConnected(object sender, ClientConnectedEventArgs e)
     {
-        clientsId.Add(e.Client.ID);
         clients.Add(e.Client);
 
         //Send all objects to spawn
@@ -89,7 +88,7 @@ public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerMana
         SendObjectToOtherClients(playerOther, e.Client);            //send a representation of the controllable player of this client to each other client
         playerOther.id++;
         
-        e.Client.MessageReceived += MovementMessageReceived;
+        e.Client.MessageReceived += MessageReceived;            //Allows the server to receive messages from this client
 
         ////////////////////////////////////////////////////////////////////////////////////////////////
     }
@@ -101,7 +100,7 @@ public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerMana
     /// <param name="e"></param>
     private void ClientDisconnected(object sender, ClientDisconnectedEventArgs e)
     {
-        clientsId.Remove(e.Client.ID);
+        clients.Remove(e.Client);
     }
     #endregion
 
@@ -172,7 +171,7 @@ public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerMana
                 //Send the message in TCP mode (Reliable)
                 thisClient.SendMessage(m, SendMode.Reliable);
 
-            i++;
+                i++;
             }
         }
     }
@@ -205,7 +204,7 @@ public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerMana
 /// </summary>
 /// <param name="sender"></param>
 /// <param name="e"></param>
-    void MovementMessageReceived(object sender, MessageReceivedEventArgs e)
+    void MessageReceived(object sender, MessageReceivedEventArgs e)
     {
         using (Message message = e.GetMessage() as Message)
         {
@@ -220,7 +219,7 @@ public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerMana
                     BouncyBallSyncMessageModel movementMessageData = new BouncyBallSyncMessageModel
                     {
                         networkID = syncMessage.networkID,
-                        serverTick = syncMessage.serverTick,
+                        serverTick = currentTick,
                         position = syncMessage.position,
                         velocity = syncMessage.velocity
                     };

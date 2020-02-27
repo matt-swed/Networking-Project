@@ -2,14 +2,8 @@
 using DarkRift.Client.Unity;
 using DarkRift.Server;
 using DarkRift.Server.Unity;
+using System.Collections.Generic;
 using UnityEngine;
-
-
-
-
-//Notes: Need to Rewrite the message writer to fit the BouncyBallSyncMessageModel. Also, I need to rename the BouncyBallSyncMessageModel
-
-
 
 
 public class NetworkPlayer : NetworkObject
@@ -20,17 +14,19 @@ public class NetworkPlayer : NetworkObject
     [Tooltip("The distance we can move before we send a position update.")]
     float moveDistance = 0.05f;
 
-    public UnityClient Client { get; set; }
+    public UnityClient Client { get; set; }  //Reference of the client
 
-    Vector3 lastPosition;
+    Vector3 lastPosition;                   //A vector to hold the last position of the object
 
-    public int clientTick = -1;
+    public int clientTick = -1;             //A variable to keep track of timing; may not be necessary
 
-    public Rigidbody rigidbodyReference;
+    public Rigidbody rigidbodyReference;    //A reference to the rigidbody, to get velocity data
 
     public override void Start()
     {
         base.Start();
+
+        
 
         rigidbodyReference = GetComponent<Rigidbody>();
 
@@ -50,7 +46,6 @@ public class NetworkPlayer : NetworkObject
             if (Vector3.Distance(lastPosition, transform.position) > moveDistance)
             {
                 SendBallPositionToClients();
-                Debug.Log("Message sent from " + id);
 
                 lastPosition = transform.position;
             }
@@ -62,27 +57,19 @@ public class NetworkPlayer : NetworkObject
         BouncyBallSyncMessageModel bouncyBallPositionMessageData = new BouncyBallSyncMessageModel
         {
             networkID = base.id,
-            serverTick = clientTick,
+            serverTick = 0,
             position = rigidbodyReference.transform.position,
             velocity = rigidbodyReference.velocity
         };
 
-        //create the message 
+        //create the message
         using (Message m = Message.Create(
             NetworkTags.InGame.REP_SYNC_POS,        //Tag
             bouncyBallPositionMessageData)                  //Data
-        )
+        )    
         {
-            foreach (IClient client in GameServerManager.instance.serverReference.Server.ClientManager.GetAllClients())
-            {
-                client.SendMessage(m, SendMode.Reliable);
-            }
+            Client.SendMessage(m, SendMode.Reliable);
         }
-    }
-
-    public void ClientConnected()
-    {
-
     }
 }
 
