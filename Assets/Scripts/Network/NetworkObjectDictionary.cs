@@ -22,7 +22,6 @@ public static class NetworkObjectDictionnary
     {
         string objectName;
         dictionary.TryGetValue(pID, out objectName);
- //       Debug.Log(objectName);
         return objectName;
     }
 }

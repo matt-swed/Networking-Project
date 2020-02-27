@@ -54,7 +54,7 @@ public class NetworkPlayer : NetworkObject
     private void SendBallPositionToClients()
     {
         //Create the message
-        BouncyBallSyncMessageModel bouncyBallPositionMessageData = new BouncyBallSyncMessageModel
+        PlayerSyncMessageModel bouncyBallPositionMessageData = new PlayerSyncMessageModel
         {
             networkID = base.id,
             serverTick = 0,

@@ -12,9 +12,7 @@ public static class NetworkTags
         // Common
         public const ushort SPAWN_OBJECT = 1001;
         ///////////////////////////
-        // Bouncy ball
-        public const ushort BOUNCY_BALL_SYNC_POS = 2001;
-
+        // Message denoting the position and velocity of a player
         public const ushort REP_SYNC_POS = 3001;
     }
 }

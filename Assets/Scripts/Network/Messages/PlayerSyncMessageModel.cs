@@ -1,7 +1,7 @@
 ﻿using DarkRift;
 using UnityEngine;
 
-public class BouncyBallSyncMessageModel : IDarkRiftSerializable
+public class PlayerSyncMessageModel : IDarkRiftSerializable
 {
     #region Properties
     public int networkID;

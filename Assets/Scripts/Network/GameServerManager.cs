@@ -29,7 +29,7 @@ public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerMana
     public List<IClient> clients;
 
     public NetworkObject playerSelf;
-    public NetworkObject playerOther;
+    public NetworkObject playerRep;
 
     /// <summary>
     /// Last tick received from the server
@@ -43,7 +43,7 @@ public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerMana
         clients = new List<IClient>();
 
         playerSelf.id = 1;                  //id used to uniquely identify the controllable player from the other controllable players
-        playerOther.id = 1;                 //id used to match the representation of the player with its corresponding controllable player on that player's client
+        playerRep.id = 1;                 //id used to match the representation of the player with its corresponding controllable player on that player's client
 
         serverReference = GetComponent<XmlUnityServer>();
 
@@ -83,10 +83,10 @@ public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerMana
         SendObjectToSpawnTo(playerSelf, e.Client);                      //send a controllable player to the client
         playerSelf.id++;                                                //
 
-        SendRepresentationsToClient(playerOther, e.Client);      //send a representation of a controllable player to the client for each other client
+        SendObjectToClient(playerRep, e.Client);      //send a representation of a controllable player to the client for each other client
         
-        SendObjectToOtherClients(playerOther, e.Client);            //send a representation of the controllable player of this client to each other client
-        playerOther.id++;
+        SendObjectToOtherClients(playerRep, e.Client);            //send a representation of the controllable player of this client to each other client
+        playerRep.id++;
         
         e.Client.MessageReceived += MessageReceived;            //Allows the server to receive messages from this client
 
@@ -146,12 +146,12 @@ public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerMana
     /// sends a message to the client
     /// </summary>
     /// <param name="pNetworkObject"></param>
-    /// <param name="thisClient"></param>
-    public void SendRepresentationsToClient(NetworkObject pNetworkObject, IClient thisClient)
+    /// <param name="pClient"></param>
+    public void SendObjectToClient(NetworkObject pNetworkObject, IClient pClient)
     {
         int i = 1;
 
-        foreach (IClient client in clients.Where(x => x != thisClient))
+        foreach (IClient client in clients.Where(x => x != pClient))
         {
             //Spawn data to send
             SpawnMessageModel spawnMessageData = new SpawnMessageModel
@@ -169,7 +169,7 @@ public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerMana
             )
             {
                 //Send the message in TCP mode (Reliable)
-                thisClient.SendMessage(m, SendMode.Reliable);
+                pClient.SendMessage(m, SendMode.Reliable);
 
                 i++;
             }
@@ -191,10 +191,10 @@ public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerMana
     /// send a message to spawn an object to every other client
     /// </summary>
     /// <param name="pNetworkObject"></param>
-    /// <param name="thisClient"></param>
-    public void SendObjectToOtherClients(NetworkObject pNetworkObject, IClient thisClient)
+    /// <param name="pClient"></param>
+    public void SendObjectToOtherClients(NetworkObject pNetworkObject, IClient pClient)
     {
-        foreach (IClient client in clients.Where(x => x != thisClient))
+        foreach (IClient client in clients.Where(x => x != pClient))
             SendObjectToSpawnTo(pNetworkObject, client);
     }
 
@@ -211,12 +211,12 @@ public class GameServerManager : MonoBehaviourSingletonPersistent<GameServerMana
             if (message.Tag == NetworkTags.InGame.REP_SYNC_POS)
             {
                 //Get message data
-                BouncyBallSyncMessageModel syncMessage = e.GetMessage().Deserialize<BouncyBallSyncMessageModel>();
+                PlayerSyncMessageModel syncMessage = e.GetMessage().Deserialize<PlayerSyncMessageModel>();
 
                 //for every client other than the one that sent the message
                 foreach (IClient client in clients.Where(x => x != e.Client))
                 {
-                    BouncyBallSyncMessageModel movementMessageData = new BouncyBallSyncMessageModel
+                    PlayerSyncMessageModel movementMessageData = new PlayerSyncMessageModel
                     {
                         networkID = syncMessage.networkID,
                         serverTick = currentTick,

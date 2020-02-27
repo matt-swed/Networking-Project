@@ -38,7 +38,7 @@ public class ClientManager : MonoBehaviourSingletonPersistent<ClientManager>
         //////////////////
         /// Suscribe to events
 
-        clientReference.MessageReceived += NeoSpawnGameObjects;
+        clientReference.MessageReceived += SpawnGameObjects;
         //////////////////
         /// Connect to the server manually
         clientReference.ConnectInBackground(
@@ -55,7 +55,7 @@ public class ClientManager : MonoBehaviourSingletonPersistent<ClientManager>
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    private void NeoSpawnGameObjects(object sender, MessageReceivedEventArgs e)
+    private void SpawnGameObjects(object sender, MessageReceivedEventArgs e)
     {
         if (e.Tag == NetworkTags.InGame.SPAWN_OBJECT)
         {
